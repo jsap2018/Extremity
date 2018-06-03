@@ -28,7 +28,8 @@ public class Launcher
 		} 
 		catch (IOException e) 
 		{
-			JOptionPane.showMessageDialog(null, "Could not retrieve client. Run via command line for more details.", "Extremity Launcher", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Could not retrieve client. Run via command line for more details.",
+					"Extremity Launcher", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -42,7 +43,8 @@ public class Launcher
 		} 
 		catch (IOException e) 
 		{
-			JOptionPane.showMessageDialog(null, "Could run client. Run via command line for more details.", "Extremity Launcher", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Could run client. Run via command line for more details.",
+					"Extremity Launcher", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			System.exit(-1);
 		}
