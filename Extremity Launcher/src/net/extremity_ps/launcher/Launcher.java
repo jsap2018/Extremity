@@ -2,7 +2,11 @@ package net.extremity_ps.launcher;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 
 import javax.swing.JOptionPane;
 
@@ -10,17 +14,19 @@ import org.apache.commons.io.FileUtils;
 
 public class Launcher 
 {
-	private static final String CLIENT_URL = "https://github.com/jsap2018/Extremity/raw/master/Extremity2_11.jar";
+	private static final String CLIENT_URL = "https://www.dropbox.com/s/g382wgddwxbwvx8/Extremity.jar?dl=1";
 	private static final String CLIENT_DIR = System.getProperty("user.home") + File.separator + "Extremity"
 			+ File.separator + "Client" + File.separator + "client.jar";
 	
+	private static File client;
+	
 	public static void main(String[] args)
 	{
-		retrieveClient();
+		updateClient();
 		launchClient();
 	}
 	
-	private static void retrieveClient()
+	private static void updateClient()
 	{
 		try 
 		{
@@ -33,20 +39,29 @@ public class Launcher
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		
+		client = new File(CLIENT_DIR);
+		
 	}
 	
-	private static void launchClient()
+	private static void launchClient() 
 	{
 		try 
 		{
-			Process p = Runtime.getRuntime().exec("java -jar " + CLIENT_DIR);
+			URL[] urls = new URL[] { client.toURI().toURL() };
+			ClassLoader cl = new URLClassLoader(urls);
+			Class<?> clazz = cl.loadClass("org.client.Client");
+			Method method = clazz.getMethod("main", String[].class);
+			method.invoke(null, (Object) new String[] {});
 		} 
-		catch (IOException e) 
+		catch (MalformedURLException | NoSuchMethodException | SecurityException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException | ClassNotFoundException e) 
 		{
-			JOptionPane.showMessageDialog(null, "Could run client. Run via command line for more details.",
+			JOptionPane.showMessageDialog(null, "Could not run client. Run via command line for more details.",
 					"Extremity Launcher", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			System.exit(-1);
 		}
+
 	}
 }
