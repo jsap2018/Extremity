@@ -23,7 +23,7 @@ public class Launcher
 	public static void main(String[] args)
 	{
 		updateClient();
-		launchClient();
+		launchNewProcess();
 	}
 	
 	private static void updateClient()
@@ -43,11 +43,42 @@ public class Launcher
 		client = new File(CLIENT_DIR);
 		
 	}
-	
-	private static void launchClient() 
+
+	private static void launchNewProcess()
 	{
 		try 
 		{
+			System.out.println("Attempting to launch a new process...");
+			Process p = Runtime.getRuntime().exec("java -Xmx1433m -jar " + CLIENT_DIR);
+			
+			try
+			{
+			p.waitFor();
+			} 
+			catch (InterruptedException e)
+			{
+				// never going to happen
+			}
+			
+			if(p.exitValue() > 0)
+			{
+				System.err.println("Failed to launch new process.");
+				launchReflection();
+			}
+		}
+		catch(IOException e)
+		{
+			System.err.println("Failed to launch new process.");
+			e.printStackTrace();
+			launchReflection();
+		}
+	}
+	
+	private static void launchReflection() 
+	{
+		try
+		{
+			System.out.println("Attempting to launch via reflection...");
 			URL[] urls = new URL[] { client.toURI().toURL() };
 			ClassLoader cl = new URLClassLoader(urls);
 			Class<?> clazz = cl.loadClass("org.client.Client");
@@ -57,11 +88,11 @@ public class Launcher
 		catch (MalformedURLException | NoSuchMethodException | SecurityException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException | ClassNotFoundException e) 
 		{
-			JOptionPane.showMessageDialog(null, "Could not run client. Run via command line for more details.",
+			System.err.println("Launch via reflection failed.");
+			JOptionPane.showMessageDialog(null, "Could not run client. Try running client manually located in Extremity/Client.",
 					"Extremity Launcher", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			System.exit(-1);
 		}
-
 	}
 }
