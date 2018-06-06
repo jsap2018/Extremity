@@ -49,7 +49,7 @@ public class Launcher
 		try 
 		{
 			System.out.println("Attempting to launch a new process...");
-			Process p = Runtime.getRuntime().exec("java -Xmx1433m -jar " + CLIENT_DIR);
+			Process p = Runtime.getRuntime().exec("java -Xmx512m -jar " + CLIENT_DIR);
 			
 			try
 			{
