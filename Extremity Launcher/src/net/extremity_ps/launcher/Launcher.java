@@ -2,6 +2,7 @@ package net.extremity_ps.launcher;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -46,33 +47,35 @@ public class Launcher
 
 	private static void launchNewProcess()
 	{
-		try 
-		{
-			System.out.println("Attempting to launch a new process...");
-			Process p = Runtime.getRuntime().exec("java -Xmx512m -jar " + CLIENT_DIR);
-			
-			try
+		Timer timer = new Timer();
+		System.out.println("Attempting to launch new process...");
+		 try 
+		 {
+			ProcessBuilder pb = new ProcessBuilder("java", "-jar", CLIENT_DIR);
+			pb.redirectError();
+			pb.inheritIO();
+			Process process = pb.start();
+			timer.start();
+			int exitCode = process.waitFor();
+			if (exitCode != 0) 
 			{
-			p.waitFor();
-			} 
-			catch (InterruptedException e)
-			{
-				// never going to happen
+				throw new IOException("Exit code: " + exitCode);
 			}
-			
-			if(p.exitValue() > 0)
+		} 
+		 catch (Exception ex)
+		 {
+			System.err.println("New process launch failed.");
+			ex.printStackTrace();
+			if(timer.attemptNewLaunch)
 			{
-				System.err.println("Failed to launch new process.");
 				launchReflection();
 			}
 		}
-		catch(IOException e)
-		{
-			System.err.println("Failed to launch new process.");
-			e.printStackTrace();
-			launchReflection();
-		}
 	}
+	
+	private static Field[] fields;
+	private static Method[] methods;
+	private static ClassLoader cl;
 	
 	private static void launchReflection() 
 	{
@@ -80,9 +83,22 @@ public class Launcher
 		{
 			System.out.println("Attempting to launch via reflection...");
 			URL[] urls = new URL[] { client.toURI().toURL() };
-			ClassLoader cl = new URLClassLoader(urls);
+			cl = new URLClassLoader(urls);
 			Class<?> clazz = cl.loadClass("org.client.Client");
 			Method method = clazz.getMethod("main", String[].class);
+			fields = clazz.getDeclaredFields();
+			methods = clazz.getDeclaredMethods();
+			
+			for (int i = 0; i < fields.length; i++) 
+			{
+				fields[i].setAccessible(true);
+			}
+
+			for (int i = 0; i < methods.length; i++) 
+			{
+				methods[i].setAccessible(true);
+			}
+			
 			method.invoke(null, (Object) new String[] {});
 		} 
 		catch (MalformedURLException | NoSuchMethodException | SecurityException | IllegalAccessException
@@ -93,6 +109,49 @@ public class Launcher
 					"Extremity Launcher", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			System.exit(-1);
+		}
+	}
+	
+    public static Field getField(String s) {
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i].getName().equals(s)) {
+                //   System.out.println("FOUND FIELD "+fields[i].toGenericString());
+                return fields[i];
+            }
+        }
+        return null;
+    }
+			
+    public static Method getMethod(String s) {
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].getName().equals(s)) {
+                return methods[i];
+            }
+        }
+        return null;
+    }
+	
+	private void addBank()
+	{
+		int x = getField("ab").getInt(cl.getClass())
+	}
+}
+
+class Timer extends Thread 
+{
+	public boolean attemptNewLaunch = true;
+
+	@Override
+	public void run()
+	{
+		try 
+		{
+			Thread.sleep(180000);
+			attemptNewLaunch = false;
+		} 
+		catch (InterruptedException e)			
+		{
+			// not really important
 		}
 	}
 }
