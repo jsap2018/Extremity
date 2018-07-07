@@ -111,30 +111,6 @@ public class Launcher
 			System.exit(-1);
 		}
 	}
-	
-    public static Field getField(String s) {
-        for (int i = 0; i < fields.length; i++) {
-            if (fields[i].getName().equals(s)) {
-                //   System.out.println("FOUND FIELD "+fields[i].toGenericString());
-                return fields[i];
-            }
-        }
-        return null;
-    }
-			
-    public static Method getMethod(String s) {
-        for (int i = 0; i < methods.length; i++) {
-            if (methods[i].getName().equals(s)) {
-                return methods[i];
-            }
-        }
-        return null;
-    }
-	
-	private void addBank()
-	{
-		int x = getField("ab").getInt(cl.getClass())
-	}
 }
 
 class Timer extends Thread 
